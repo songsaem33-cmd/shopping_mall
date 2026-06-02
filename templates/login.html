@@ -71,13 +71,13 @@
             LOGIN
         </div>
 
-        <form>
+        <form action="/login" method="POST">
 
-            <input type="text" class="form-control" placeholder="아이디">
+            <input type="text" class="form-control" name="userid" placeholder="아이디">
 
-            <input type="password" class="form-control" placeholder="비밀번호">
+            <input type="password" class="form-control" name="password" placeholder="비밀번호">
 
-            <button class="login-btn">
+            <button type="submit" class="login-btn">
                 로그인
             </button>
 
@@ -85,7 +85,7 @@
 
         <div class="signup-link">
 
-            <a href="signup.html">
+            <a href="/signup">
                 회원가입 하러가기
             </a>
 
