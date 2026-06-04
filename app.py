@@ -20,6 +20,15 @@ def create_table():
     )
     """)
 
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS orders (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        userid TEXT,
+        product_name TEXT,
+        price TEXT
+)
+""")
+
     conn.commit()
     conn.close()
 
@@ -118,10 +127,28 @@ def pants():
     return render_template("pants.html")
 
 
-@app.route("/pay")
-def pay():
-    return render_template("pay.html")
+@app.route("/pay/<int:product_id>")
+def pay(product_id):
 
+    products = {
+        1: {"name": "오버핏 반팔 셔츠", "price": "49,000원"},
+        2: {"name": "와이드 데님 팬츠", "price": "59,000원"},
+        3: {"name": "미니멀 블레이저", "price": "89,000원"},
+        4: {"name": "오버핏 셔츠", "price": "39,000원"},
+        5: {"name": "미니멀 니트", "price": "49,000원"},
+        6: {"name": "반팔 티셔츠", "price": "29,000원"},
+        7: {"name": "와이드 슬랙스", "price": "49,000원"},
+        8: {"name": "데님 팬츠", "price": "59,000원"},
+        9: {"name": "조거 팬츠", "price": "35,000원"}
+    }
+
+    product = products[product_id]
+
+    return render_template(
+        "pay.html",
+        product=product,
+        product_id=product_id
+    )
 
 @app.route("/detail/<int:product_id>")
 def detail(product_id):
@@ -248,6 +275,78 @@ def cart_page():
     return render_template(
         "cart.html",
         cart=cart
+    )
+
+@app.route("/order/<int:product_id>")
+def order(product_id):
+
+    products = {
+        1: {"name": "오버핏 반팔 셔츠", "price": "49,000원"},
+        2: {"name": "와이드 데님 팬츠", "price": "59,000원"},
+        3: {"name": "미니멀 블레이저", "price": "89,000원"},
+        4: {"name": "오버핏 셔츠", "price": "39,000원"},
+        5: {"name": "미니멀 니트", "price": "49,000원"},
+        6: {"name": "반팔 티셔츠", "price": "29,000원"},
+        7: {"name": "와이드 슬랙스", "price": "49,000원"},
+        8: {"name": "데님 팬츠", "price": "59,000원"},
+        9: {"name": "조거 팬츠", "price": "35,000원"}
+    }
+
+    product = products[product_id]
+
+    userid = session.get("userid")
+
+    conn = sqlite3.connect("database.db")
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO orders(userid, product_name, price)
+        VALUES(?,?,?)
+        """,
+        (
+            userid,
+            product["name"],
+            product["price"]
+        )
+    )
+
+    conn.commit()
+    conn.close()
+
+    return render_template(
+        "order_complete.html",
+        product=product
+    )
+
+@app.route("/mypage")
+def mypage():
+
+    userid = session.get("userid")
+
+    if not userid:
+        return redirect("/login")
+
+    conn = sqlite3.connect("database.db")
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT product_name, price
+        FROM orders
+        WHERE userid=?
+        """,
+        (userid,)
+    )
+
+    orders = cur.fetchall()
+
+    conn.close()
+
+    return render_template(
+        "mypage.html",
+        orders=orders,
+        userid=userid
     )
 
 if __name__ == "__main__":
